@@ -74,13 +74,19 @@ def construct_import_dict(import_lines, override=None):
     [('standard', ['import os'])]
     >>> construct_import_dict(['import os', 'import cv2']).items()
     [('third_party', ['import cv2']), ('standard', ['import os'])]
+    >>> construct_import_dict(['from . import function']).items()
+    [('local', ['from . import function'])]
+    >>> construct_import_dict(['import os.path']).items()
+    [('standard', ['import os.path'])]
     """
     final_imports = defaultdict(list)
 
     for import_line in import_lines:
         mod_name = get_module_name_from_import(import_line)
 
-        if is_standard_module(mod_name, override):
+        if mod_name == '.':
+            final_imports['local'] += [import_line]
+        elif is_standard_module(mod_name, override):
             final_imports['standard'] += [import_line]
         elif is_third_party_module(mod_name, override):
             final_imports['third_party'] += [import_line]
@@ -242,9 +248,13 @@ def get_module_name_from_import(imprt_line):
     'argparse'
     >>> get_module_name_from_import('from collections import defaultdict')
     'collections'
+    >>> get_module_name_from_import('from . import function')
+    '.'
+    >>> get_module_name_from_import('import module.submodule')
+    'module.submodule'
     """
     match = re.search(
-        r'^(from|import) (?P<module>[A-Za-z_0-9]+).*$', imprt_line)
+        r'^(from|import) (?P<module>[A-Za-z_0-9\.]+).*$', imprt_line)
     if match:
         return match.groupdict()['module']
     else:
