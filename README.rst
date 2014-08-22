@@ -49,8 +49,8 @@ To this end, there are command line options to `check_import_order.py` which
 allow the user to specify which category a module should be grouped in. This
 is invoked on the command line as such:::
 
-    check_import_order.py --system=os,datetime my_script.py
-    check_import_order.py --system="os, datetime" my_script.py
+    check_import_order.py --standard=os,datetime my_script.py
+    check_import_order.py --standard="os, datetime" my_script.py
 
 Note that the module names are comma-separated and any leading or trailing
 whitespace is stripped.
