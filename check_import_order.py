@@ -59,7 +59,8 @@ def main():
             'third_party': _sanitize_cmd_line_opt(clargs.third_party),
             'local': _sanitize_cmd_line_opt(clargs.local)
         }
-        import_dict = construct_import_dict(import_lines, override=override)
+        import_dict = construct_import_dict(
+            import_lines, override=override, local_dir=os.path.dirname(py_file))
 
         ordered_imports = get_ordered_imports(import_dict)
         exit_status += verify_imports_order(
@@ -68,7 +69,7 @@ def main():
     sys.exit(exit_status > 0)
 
 
-def construct_import_dict(import_lines, override=None):
+def construct_import_dict(import_lines, override=None, local_dir=None):
     """Given a series of import lines, construct a dict of imports grouped
     by module type (standard, third_party or local).
     >>> construct_import_dict(['import os']).items()
@@ -82,10 +83,19 @@ def construct_import_dict(import_lines, override=None):
     """
     final_imports = defaultdict(list)
 
+    if local_dir is not None:
+        if not os.path.isdir(local_dir):
+            raise ValueError("Directory '%s' does not exist." % local_dir)
+
     for import_line in import_lines:
         mod_name = get_module_name_from_import(import_line)
 
         if mod_name == '.':
+            final_imports['local'] += [import_line]
+        elif (
+            local_dir is not None and
+            is_local_directory_module(mod_name, local_dir, override=override)
+        ):
             final_imports['local'] += [import_line]
         elif is_standard_module(mod_name, override=override):
             final_imports['standard'] += [import_line]
@@ -166,6 +176,22 @@ def load_module(module_name):
     except ImportError:
         print "Cannot import '%s'." % module_name
     return module
+
+
+def is_local_directory_module(module, local_dir, override=None):
+    """Checks if a given `module` is the same directory as `py_file`.
+    >>> is_local_directory_module('os', '.')
+    False
+    """
+    if override is None:
+        override = EMPTY_OVERRIDE
+
+    if module in override['local']:
+        return True
+    elif module in override['standard'] or module in override['third_party']:
+        return False
+
+    return os.path.isfile(os.path.join(local_dir, "%s.py" % module))
 
 
 def is_standard_module(module, override=None):
