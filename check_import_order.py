@@ -54,11 +54,12 @@ def main():
             continue
 
         imports_string, import_lines = get_import_lines(py_file)
-        import_dict = construct_import_dict(
-            import_lines,
-            {'standard': _sanitize_cmd_line_opt(clargs.standard),
-             'third_party': _sanitize_cmd_line_opt(clargs.third_party),
-             'local': _sanitize_cmd_line_opt(clargs.third_party)})
+        override = {
+            'standard': _sanitize_cmd_line_opt(clargs.standard),
+            'third_party': _sanitize_cmd_line_opt(clargs.third_party),
+            'local': _sanitize_cmd_line_opt(clargs.third_party)
+        }
+        import_dict = construct_import_dict(import_lines, override=override)
 
         ordered_imports = get_ordered_imports(import_dict)
         exit_status += verify_imports_order(
@@ -86,9 +87,9 @@ def construct_import_dict(import_lines, override=None):
 
         if mod_name == '.':
             final_imports['local'] += [import_line]
-        elif is_standard_module(mod_name, override):
+        elif is_standard_module(mod_name, override=override):
             final_imports['standard'] += [import_line]
-        elif is_third_party_module(mod_name, override):
+        elif is_third_party_module(mod_name, override=override):
             final_imports['third_party'] += [import_line]
         else:
             final_imports['local'] += [import_line]
