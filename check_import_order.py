@@ -60,7 +60,8 @@ def main():
             'local': _sanitize_cmd_line_opt(clargs.local)
         }
         import_dict = construct_import_dict(
-            import_lines, override=override, local_dir=os.path.dirname(py_file))
+            import_lines, override=override,
+            local_dir=os.path.dirname(os.path.abspath(py_file)))
 
         ordered_imports = get_ordered_imports(import_dict)
         exit_status += verify_imports_order(
