@@ -91,7 +91,7 @@ def construct_import_dict(import_lines, override=None):
             final_imports['standard'] += [import_line]
         elif is_third_party_module(mod_name, override=override):
             final_imports['third_party'] += [import_line]
-        else:
+        else:  # assume it's on PYTHONPATH
             final_imports['local'] += [import_line]
 
     return final_imports
