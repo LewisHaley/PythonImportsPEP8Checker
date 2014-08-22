@@ -57,7 +57,7 @@ def main():
         override = {
             'standard': _sanitize_cmd_line_opt(clargs.standard),
             'third_party': _sanitize_cmd_line_opt(clargs.third_party),
-            'local': _sanitize_cmd_line_opt(clargs.third_party)
+            'local': _sanitize_cmd_line_opt(clargs.local)
         }
         import_dict = construct_import_dict(import_lines, override=override)
 
